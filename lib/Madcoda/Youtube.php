@@ -18,6 +18,7 @@ class Youtube {
         'search.list' => 'https://www.googleapis.com/youtube/v3/search',
         'channels.list' => 'https://www.googleapis.com/youtube/v3/channels',
         'playlists.list' => 'https://www.googleapis.com/youtube/v3/playlists',
+        'playlistItems.list' => 'https://www.googleapis.com/youtube/v3/playlistItems',
         'activities' => 'https://www.googleapis.com/youtube/v3/activities'
     );
 
@@ -172,6 +173,17 @@ class Youtube {
     }
 
 
+    public function getPlaylistItemsById($playlistId){
+        $API_URL = $this->getApi('playlistItems.list');
+        $params = array(
+            'playlistId' => $playlistId,
+            'part' => 'id, snippet, status, contentDetails'
+        );
+        $apiData = $this->api_get($API_URL, $params);
+        return $this->decodeList($apiData);
+    }
+
+
     public function getActivitiesByChannelId($channelId){
         if(empty($channelId)){
             throw new \InvalidArgumentException('ChannelId must be supplied');
@@ -236,6 +248,9 @@ class Youtube {
     }
 
 
+    public function makeVidUrl($Vid) {
+        return "www.youtube.com/watch?v=$Vid";
+    }
 
 
     /*
@@ -318,7 +333,36 @@ class Youtube {
         {
           throw new \Exception('Curl Error : ' . curl_error($tuCurl));
         }
+        $tuInfo = curl_getinfo($tuCurl);
+
+        // try to provide Errors Message
+        if($tuInfo["http_code"] != 200) {
+            if(stristr($tuInfo["content_type"], "text/html") !== false) {
+                $tuData = explode("title", $tuData);
+                $tuData  = str_replace(array('<', '>', '/'), "", $tuData[1]);
+            }
+            if(stristr($tuInfo["content_type"], "application/json") !== false) {
+                try {
+                    $tuObj = json_decode($tuData)->error;
+                    $tuData = $this->prop_exist($tuObj->message)." on domain ".$this->prop_exist($tuObj->errors[0]->domain)." because ".$this->prop_exist($tuObj->errors[0]->reason)." says ".$this->prop_exist($tuObj->errors[0]->message);
+                } catch(\Exception $e) {
+                    // do nothing
+                }
+            }
+            throw new \Exception("Error ".$tuInfo["http_code"]." message is ".$tuData);
+        }
         return $tuData;
+    }
+
+    /**
+     * quick check if an element exist
+     * @param  mixed $elem any element
+     * @return mixed $elem
+     * @throws Exception
+     */
+    private function prop_exist($elem) {
+        if(!isset($elem))
+            throw new \Exception("Element doesn't exist");
     }
 
 

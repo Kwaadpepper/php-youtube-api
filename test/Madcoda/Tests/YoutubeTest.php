@@ -20,7 +20,7 @@ class YoutubeTest extends \PHPUnit_Framework_TestCase
 
 	public function setUp()
     {
-    	$TEST_API_KEY = 'AIzaSyDDefsgXEZu57wYgABF7xEURClu4UAzyB8';
+    	$TEST_API_KEY = 'AIzaSyCc2loZn9vqd1WIe6oR-GltrWmZHc6X68Y';
         $this->youtube = new Youtube(array('key' => $TEST_API_KEY));
     }
 
@@ -155,6 +155,21 @@ class YoutubeTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    /**
+     * Actually this works
+     */
+    public function testGetPlaylistItemById(){
+
+        //get one of the playlist
+        $GOOGLE_CHANNELID = 'UCK8sQmJBp8GCxrOtXWBpyEA';
+        $response = $this->youtube->getPlaylistsByChannelId($GOOGLE_CHANNELID);
+        $playlist = $response[0];
+
+        $response = $this->youtube->getPlaylistItemsById($playlist->id);
+        $this->assertEquals('youtube#playlistItem', $response->kind);
+        
+        print_r($response);
+    }
 
     public function testParseVIdFromURLFull(){
     	$vId = $this->youtube->parseVIdFromURL('http://www.youtube.com/watch?v=1FJHYqE0RDg');
