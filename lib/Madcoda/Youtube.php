@@ -1,8 +1,5 @@
 <?php
 
-namespace Madcoda;
-
-
 /**
  * Youtube Data API (mainly apis for retrieving data)
  * @version 0.1
